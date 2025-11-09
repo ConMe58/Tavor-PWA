@@ -6,14 +6,7 @@ const saveLog = arr => localStorage.setItem(KEY_LOG, JSON.stringify(arr));
 const loadDoses = () => JSON.parse(localStorage.getItem(KEY_DOSES) || "[]");
 const saveDoses = arr => localStorage.setItem(KEY_DOSES, JSON.stringify(arr));
 
-// ---------- Grundfunktionen ----------
-function doseToMg(txt) {
-  const n = txt.split(" ")[0].replace(",", ".");
-  const v = parseFloat(n);
-  return isNaN(v) ? 0 : v;
-}
-
-// ---------- DOM ----------
+// ---------- DOM-Elemente ----------
 const doseSel = document.getElementById("dose");
 const timeModeSel = document.getElementById("timeMode");
 const customDT = document.getElementById("customDateTime");
@@ -23,10 +16,9 @@ const tableBody = document.getElementById("logBody");
 const addDoseBtn = document.getElementById("addDoseBtn");
 const removeDoseBtn = document.getElementById("removeDoseBtn");
 
-// ---------- Initial-Setup ----------
+// ---------- Funktionen ----------
 function initDoses() {
   const saved = loadDoses();
-  // Standardwerte falls nichts gespeichert
   const defaults = [
     "0,5 Expedit","1,0 Expedit","1,5 Expedit",
     "0,5 Normal","1,0 Normal","1,5 Normal"
@@ -43,7 +35,10 @@ function initDoses() {
 
 function saveDose() {
   const selected = Array.from(doseSel.selectedOptions).map(o => o.value);
-  if (!selected.length) return alert("Bitte mindestens eine Dosis auswählen!");
+  if (!selected.length) {
+    alert("Bitte mindestens eine Dosis auswählen!");
+    return;
+  }
 
   let when = new Date();
   if (timeModeSel.value === "custom" && customDT.value) {
@@ -52,7 +47,7 @@ function saveDose() {
 
   const log = loadLog();
   selected.forEach(dose => log.push({ dose, time: when.toISOString() }));
-  log.sort((a,b)=> new Date(a.time) - new Date(b.time));
+  log.sort((a,b) => new Date(a.time) - new Date(b.time));
   saveLog(log);
   render();
 
@@ -121,5 +116,7 @@ removeDoseBtn.addEventListener("click", () => {
 saveBtn.addEventListener("click", saveDose);
 
 // ---------- Start ----------
-initDoses();
-render();
+document.addEventListener("DOMContentLoaded", () => {
+  initDoses();
+  render();
+});
