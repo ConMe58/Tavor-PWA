@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tavor Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>💊 Tavor Tracker</h2>
+
+  <label>Dosis:</label>
+  <select id="dose">
+    <option>0,5 Expedit</option>
+    <option>1,0 Expedit</option>
+    <option>1,5 Expedit</option>
+    <option>0,5 Normal</option>
+    <option>1,0 Normal</option>
+    <option>1,5 Normal</option>
+  </select>
+
+  <button onclick="saveDose()">Einnahme speichern</button>
+
+  <h3>🕒 Letzte Einnahme:</h3>
+  <p id="lastEntry">Keine Daten</p>
+
+  <h3>📊 Verlauf</h3>
+  <table id="logTable">
+    <tr><th>Datum</th><th>Dosis</th></tr>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
