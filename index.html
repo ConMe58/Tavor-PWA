@@ -6,6 +6,58 @@
   <title>Tavor Tracker</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Dark/Light automatisch */
+    :root {
+      color-scheme: light dark;
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1em;
+      background-color: var(--bg);
+      color: var(--fg);
+      transition: background 0.3s, color 0.3s;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111;
+        --fg: #fff;
+      }
+      button {
+        background: #007aff;
+        color: white;
+      }
+      select, input {
+        background: #222;
+        color: #fff;
+        border: 1px solid #444;
+      }
+      .card {
+        background: #1c1c1e;
+        border: 1px solid #333;
+      }
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #fff;
+        --fg: #000;
+      }
+      .card {
+        background: #f5f5f7;
+        border: 1px solid #ddd;
+      }
+    }
+    header { text-align:center; margin-bottom:1em; }
+    .card { border-radius:12px; padding:1em; margin-bottom:1em; }
+    .row { display:flex; gap:0.5em; align-items:center; margin:0.5em 0; }
+    button { border:none; border-radius:8px; padding:0.6em 1em; cursor:pointer; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:0.4em; border-bottom:1px solid #444; text-align:left; }
+    th { opacity:0.8; }
+    input, select { flex:1; padding:0.5em; border-radius:6px; }
+    #exportDays { width:80px; }
+  </style>
 </head>
 <body>
   <header>
@@ -20,8 +72,8 @@
 
     <div class="row">
       <input id="newDose" placeholder="Eigene Dosis z. B. 2,0 Expedit" />
-      <button type="button" id="addDoseBtn">＋</button>
-      <button type="button" id="removeDoseBtn">🗑️</button>
+      <button id="addDoseBtn">＋</button>
+      <button id="removeDoseBtn">🗑️</button>
     </div>
 
     <div class="row">
@@ -33,7 +85,7 @@
       <input id="customDateTime" type="datetime-local" />
     </div>
 
-    <button id="saveBtn">Einnahme speichern</button>
+    <button id="saveBtn">💾 Einnahme speichern</button>
   </section>
 
   <section class="card">
@@ -49,6 +101,16 @@
       </thead>
       <tbody id="logBody"></tbody>
     </table>
+  </section>
+
+  <section class="card">
+    <h2>📤 Export</h2>
+    <div class="row">
+      <label>Zeitraum:</label>
+      <input id="exportDays" type="number" min="1" placeholder="Tage" />
+      <button id="exportCSV">CSV</button>
+      <button id="exportPDF">PDF</button>
+    </div>
   </section>
 
   <script src="script.js"></script>
