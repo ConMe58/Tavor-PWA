@@ -1,25 +1,8 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #111;
-  color: #fff;
-  text-align: center;
-  padding: 20px;
+:root{
+  --bg: #0f1115; --fg:#e9eaee; --muted:#aeb3bd; --card:#171a21; --line:#2a2f3a; --btn:#2d6cdf;
+  --bg-light:#ffffff; --fg-light:#111318; --muted-light:#50545a; --card-light:#f6f7f9; --line-light:#e5e7eb; --btn-light:#2563eb;
+  --radius:14px;
 }
 
-select, button {
-  font-size: 1.1em;
-  margin: 8px;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-th, td {
-  border-bottom: 1px solid #444;
-  padding: 6px;
-}
+/* Auto Light/Dark */
+@media (pref
