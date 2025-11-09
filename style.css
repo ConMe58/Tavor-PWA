@@ -5,4 +5,63 @@
 }
 
 /* Auto Light/Dark */
-@media (pref
+@media (prefers-color-scheme: light){
+  :root{ --bg:var(--bg-light); --fg:var(--fg-light); --muted:var(--muted-light);
+         --card:var(--card-light); --line:var(--line-light); --btn:var(--btn-light); }
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+  background:var(--bg); color:var(--fg); line-height:1.45; padding:16px; max-width:900px; margin:auto;
+}
+
+header h1{margin:0 0 10px 0; font-weight:700}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  margin:14px 0;
+}
+
+.row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+label{color:var(--muted)}
+select,input[type="number"],input[type="datetime-local"]{
+  background:transparent; color:var(--fg); border:1px solid var(--line);
+  padding:8px 10px; border-radius:10px; min-height:40px;
+}
+button{
+  border:0; background:var(--btn); color:#fff; padding:10px 14px; border-radius:12px; font-weight:600;
+}
+button:active{transform:translateY(1px)}
+
+.stats{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin:10px 0;
+}
+.stat{
+  background:transparent; border:1px dashed var(--line); border-radius:12px; padding:10px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.stat span{color:var(--muted)}
+.stat strong{font-size:1.1rem}
+
+table{width:100%; border-collapse:collapse; margin-top:10px}
+thead th{border-bottom:2px solid var(--line); text-align:left; padding:8px}
+tbody td{border-bottom:1px solid var(--line); padding:8px}
+.col-index{width:56px; text-align:right; padding-right:12px}
+
+.switch{margin-left:auto; display:flex; align-items:center; gap:8px}
+.switch input{transform:scale(1.1)}
+
+.hint{color:var(--muted); font-size:.9rem; margin-top:8px}
+
+/* Print / PDF */
+@media print{
+  body{background:#fff;color:#000}
+  .card{border:none}
+  button,.switch,.hint{display:none}
+  a::after{content:""}
+}
