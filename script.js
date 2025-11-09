@@ -1,4 +1,3 @@
-// ---------- Speicher ----------
 const KEY_LOG = "tavorLog";
 const KEY_DOSES = "tavorDoses";
 const loadLog = () => JSON.parse(localStorage.getItem(KEY_LOG) || "[]");
@@ -6,7 +5,6 @@ const saveLog = arr => localStorage.setItem(KEY_LOG, JSON.stringify(arr));
 const loadDoses = () => JSON.parse(localStorage.getItem(KEY_DOSES) || "[]");
 const saveDoses = arr => localStorage.setItem(KEY_DOSES, JSON.stringify(arr));
 
-// ---------- DOM-Elemente ----------
 const doseSel = document.getElementById("dose");
 const timeModeSel = document.getElementById("timeMode");
 const customDT = document.getElementById("customDateTime");
@@ -15,15 +13,17 @@ const lastEntryEl = document.getElementById("lastEntry");
 const tableBody = document.getElementById("logBody");
 const addDoseBtn = document.getElementById("addDoseBtn");
 const removeDoseBtn = document.getElementById("removeDoseBtn");
+const exportCSVBtn = document.getElementById("exportCSV");
+const exportPDFBtn = document.getElementById("exportPDF");
+const exportDaysInput = document.getElementById("exportDays");
 
-// ---------- Funktionen ----------
 function initDoses() {
   const saved = loadDoses();
   const defaults = [
     "0,5 Expedit","1,0 Expedit","1,5 Expedit",
     "0,5 Normal","1,0 Normal","1,5 Normal"
   ];
-  const list = [...new Set([...defaults, ...saved])]; // Duplikate vermeiden
+  const list = [...new Set([...defaults, ...saved])];
   doseSel.innerHTML = "";
   list.forEach(d => {
     const opt = document.createElement("option");
@@ -35,10 +35,7 @@ function initDoses() {
 
 function saveDose() {
   const selected = Array.from(doseSel.selectedOptions).map(o => o.value);
-  if (!selected.length) {
-    alert("Bitte mindestens eine Dosis auswählen!");
-    return;
-  }
+  if (!selected.length) return alert("Bitte mindestens eine Dosis auswählen!");
 
   let when = new Date();
   if (timeModeSel.value === "custom" && customDT.value) {
@@ -47,14 +44,9 @@ function saveDose() {
 
   const log = loadLog();
   selected.forEach(dose => log.push({ dose, time: when.toISOString() }));
-  log.sort((a,b) => new Date(a.time) - new Date(b.time));
+  log.sort((a,b)=> new Date(a.time) - new Date(b.time));
   saveLog(log);
   render();
-
-  doseSel.selectedIndex = -1;
-  timeModeSel.value = "now";
-  customDT.value = "";
-  customDT.style.display = "none";
 }
 
 function render() {
@@ -83,37 +75,71 @@ function humanText(entry) {
   return `${entry.dose} – vor ${h} Std ${m} Min (${new Date(t).toLocaleString()})`;
 }
 
+// ---------- Export ----------
+function exportCSV(days) {
+  const log = filterByDays(loadLog(), days);
+  if (!log.length) return alert("Keine Daten zum Exportieren.");
+
+  const csv = "Datum,Dosis\n" + log.map(e => 
+    `${new Date(e.time).toLocaleString()},${e.dose}`).join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "tavor_tracker.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPDF(days) {
+  const log = filterByDays(loadLog(), days);
+  if (!log.length) return alert("Keine Daten zum Exportieren.");
+
+  let html = "<h1>Tavor Tracker Verlauf</h1><table border='1' cellspacing='0' cellpadding='4'><tr><th>Datum</th><th>Dosis</th></tr>";
+  log.forEach(e => {
+    html += `<tr><td>${new Date(e.time).toLocaleString()}</td><td>${e.dose}</td></tr>`;
+  });
+  html += "</table>";
+
+  const win = window.open("", "_blank");
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+
+function filterByDays(arr, days) {
+  if (!days) return arr;
+  const limit = Date.now() - days * 24 * 60 * 60 * 1000;
+  return arr.filter(e => new Date(e.time).getTime() >= limit);
+}
+
 // ---------- Ereignisse ----------
 timeModeSel.addEventListener("change", () => {
   customDT.style.display = timeModeSel.value === "custom" ? "inline-block" : "none";
 });
-
 addDoseBtn.addEventListener("click", () => {
   const val = document.getElementById("newDose").value.trim();
   if (!val) return;
   const doses = loadDoses();
   if (doses.includes(val)) return alert("Dieser Eintrag existiert bereits.");
-
   doses.push(val);
   saveDoses(doses);
   initDoses();
   doseSel.value = val;
   document.getElementById("newDose").value = "";
 });
-
 removeDoseBtn.addEventListener("click", () => {
   const selected = Array.from(doseSel.selectedOptions).map(o => o.value);
   if (!selected.length) return alert("Wähle zuerst einen Menüpunkt zum Löschen aus.");
-
   if (!confirm(`Willst du ${selected.join(", ")} wirklich löschen?`)) return;
-
-  let doses = loadDoses();
-  doses = doses.filter(d => !selected.includes(d));
+  let doses = loadDoses().filter(d => !selected.includes(d));
   saveDoses(doses);
   initDoses();
 });
-
 saveBtn.addEventListener("click", saveDose);
+exportCSVBtn.addEventListener("click", () => exportCSV(Number(exportDaysInput.value)));
+exportPDFBtn.addEventListener("click", () => exportPDF(Number(exportDaysInput.value)));
 
 // ---------- Start ----------
 document.addEventListener("DOMContentLoaded", () => {
