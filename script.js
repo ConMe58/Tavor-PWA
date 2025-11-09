@@ -17,6 +17,11 @@ const exportCSVBtn = document.getElementById("exportCSV");
 const exportPDFBtn = document.getElementById("exportPDF");
 const exportDaysInput = document.getElementById("exportDays");
 
+const daysCountEl = document.getElementById("daysCount");
+const avgTotalEl = document.getElementById("avgTotal");
+const avg7El = document.getElementById("avg7");
+
+// -------------------- Dosen-Setup --------------------
 function initDoses() {
   const saved = loadDoses();
   const defaults = [
@@ -33,6 +38,7 @@ function initDoses() {
   saveDoses(list);
 }
 
+// -------------------- Speicherung --------------------
 function saveDose() {
   const selected = Array.from(doseSel.selectedOptions).map(o => o.value);
   if (!selected.length) return alert("Bitte mindestens eine Dosis auswählen!");
@@ -49,6 +55,7 @@ function saveDose() {
   render();
 }
 
+// -------------------- Darstellung --------------------
 function render() {
   const log = loadLog();
   if (log.length) {
@@ -58,6 +65,7 @@ function render() {
     lastEntryEl.textContent = "Noch keine Daten";
   }
 
+  // Verlauf
   tableBody.innerHTML = "";
   log.forEach((e, i) => {
     const tr = document.createElement("tr");
@@ -66,8 +74,46 @@ function render() {
                     <td>${e.dose}</td>`;
     tableBody.appendChild(tr);
   });
+
+  updateStats(log);
 }
 
+// -------------------- Statistik --------------------
+function parseMg(text) {
+  // Extrahiere Zahlen wie 1,5 oder 2.0 aus Dosis-Text
+  const n = text.match(/[\d,.]+/);
+  if (!n) return 0;
+  return parseFloat(n[0].replace(",", "."));
+}
+
+function updateStats(log) {
+  if (!log.length) {
+    daysCountEl.textContent = avgTotalEl.textContent = avg7El.textContent = "–";
+    return;
+  }
+
+  // Alle einzigartigen Tage zählen
+  const uniqueDays = [...new Set(log.map(e => new Date(e.time).toDateString()))];
+  daysCountEl.textContent = uniqueDays.length;
+
+  // Gesamt-Durchschnitt (mg pro Tag)
+  const totalMg = log.map(e => parseMg(e.dose)).reduce((a,b) => a + b, 0);
+  const avgTotal = totalMg / uniqueDays.length;
+  avgTotalEl.textContent = `${avgTotal.toFixed(2)} mg/Tag`;
+
+  // Durchschnitt der letzten 7 Tage
+  const sevenDaysAgo = Date.now() - 7*24*60*60*1000;
+  const recent = log.filter(e => new Date(e.time).getTime() >= sevenDaysAgo);
+  if (!recent.length) {
+    avg7El.textContent = "–";
+  } else {
+    const days7 = [...new Set(recent.map(e => new Date(e.time).toDateString()))];
+    const mg7 = recent.map(e => parseMg(e.dose)).reduce((a,b) => a + b, 0);
+    avg7El.textContent = `${(mg7 / days7.length).toFixed(2)} mg/Tag`;
+  }
+}
+
+// -------------------- Hilfsfunktionen --------------------
 function humanText(entry) {
   const t = new Date(entry.time).getTime();
   const diffMin = Math.round((Date.now() - t) / 60000);
@@ -75,7 +121,13 @@ function humanText(entry) {
   return `${entry.dose} – vor ${h} Std ${m} Min (${new Date(t).toLocaleString()})`;
 }
 
-// ---------- Export ----------
+// -------------------- Export --------------------
+function filterByDays(arr, days) {
+  if (!days) return arr;
+  const limit = Date.now() - days * 24 * 60 * 60 * 1000;
+  return arr.filter(e => new Date(e.time).getTime() >= limit);
+}
+
 function exportCSV(days) {
   const log = filterByDays(loadLog(), days);
   if (!log.length) return alert("Keine Daten zum Exportieren.");
@@ -95,26 +147,18 @@ function exportCSV(days) {
 function exportPDF(days) {
   const log = filterByDays(loadLog(), days);
   if (!log.length) return alert("Keine Daten zum Exportieren.");
-
   let html = "<h1>Tavor Tracker Verlauf</h1><table border='1' cellspacing='0' cellpadding='4'><tr><th>Datum</th><th>Dosis</th></tr>";
   log.forEach(e => {
     html += `<tr><td>${new Date(e.time).toLocaleString()}</td><td>${e.dose}</td></tr>`;
   });
   html += "</table>";
-
   const win = window.open("", "_blank");
   win.document.write(html);
   win.document.close();
   win.print();
 }
 
-function filterByDays(arr, days) {
-  if (!days) return arr;
-  const limit = Date.now() - days * 24 * 60 * 60 * 1000;
-  return arr.filter(e => new Date(e.time).getTime() >= limit);
-}
-
-// ---------- Ereignisse ----------
+// -------------------- Events --------------------
 timeModeSel.addEventListener("change", () => {
   customDT.style.display = timeModeSel.value === "custom" ? "inline-block" : "none";
 });
@@ -141,7 +185,7 @@ saveBtn.addEventListener("click", saveDose);
 exportCSVBtn.addEventListener("click", () => exportCSV(Number(exportDaysInput.value)));
 exportPDFBtn.addEventListener("click", () => exportPDF(Number(exportDaysInput.value)));
 
-// ---------- Start ----------
+// -------------------- Start --------------------
 document.addEventListener("DOMContentLoaded", () => {
   initDoses();
   render();
